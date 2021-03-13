@@ -1,8 +1,9 @@
 const express = require('express');
 const dotenv = require('dotenv');
 dotenv.config();
+let aRes;
 
-function getNLUInstance(analyzeParams){
+function getNLUInstance(){
     let api_key = process.env.API_KEY;
     let api_url = process.env.API_URL;
 
@@ -19,16 +20,8 @@ function getNLUInstance(analyzeParams){
                 serviceUrl: api_url
             }
         );
-        
-
-
-    naturalLanguageUnderstanding.analyze(analyzeParams)
-    .then(analysisResults => {
-        console.log(JSON.stringify(analysisResults, null, 2));
-    })
-    .catch(err => {
-        console.log('error:', err);
-    });
+    
+    return naturalLanguageUnderstanding;
     }
 
 
@@ -55,23 +48,47 @@ app.get("/url/sentiment", (req,res) => {
 });
 
 app.get("/text/emotion", (req,res) => {
-    return res.send({"happy":"10","sad":"90"});
+    const analyzeParams = {
+        'text': req.query.text,
+        'features': {
+            'emotion': {
+                'document': true
+            }
+        },
+        'language': 'en'
+    };
+
+    const nInstance = getNLUInstance();
+    nInstance.analyze(analyzeParams)
+    .then(analysisResults => {
+        console.log(JSON.stringify(analysisResults, null, 2));
+        
+        const resHtml = "<table><tr><td>col1</td><td>AAA</td></tr></table>"
+        
+        return res.send(
+            analysisResults.result
+        );
+    })
+    .catch(err => {
+        console.log('error:', err);
+        return null;
+    });
+    
 });
 
 app.get("/text/sentiment", (req,res) => {
     //return res.send("text sentiment for "+req.query.text);
     
     const analyzeParams = {
- 'text': 'Go to Hell',
-  'features': {
-    'entities': {
-      'emotion': true,
-      'sentiment': true,
-      'limit': 2,
-    }}
-};
+        'text': req.query.text,
+        'features': {
+            'emotion': {
+                'document': true
+            }
+        }
+    };
     console.log(getNLUInstance(analyzeParams));
-    return res.send("AAA");
+    return res.send(req.query.text);
 });
 
 let server = app.listen(8080, () => {
