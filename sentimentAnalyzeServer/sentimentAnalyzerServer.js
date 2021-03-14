@@ -81,8 +81,13 @@ app.get("/url/sentiment", (req,res) => {
     .then(analysisResults => {
         console.log(JSON.stringify(analysisResults, null, 2));
         
+        const resJson = {
+                "label": analysisResults.result.sentiment.document.label,
+                "message": "text sentiment for " + req.query.url
+            }
+
         return res.send(
-            "url sentiment for "+analysisResults.result.sentiment.document
+            resJson
         );
     })
     .catch(err => {
